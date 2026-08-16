@@ -55,6 +55,6 @@ async def get_ws_context(
 graphql_router = GraphQLRouter(
     schema=schema,
     context_getter=get_graphql_context,
-    graphiql=True,  # Enable GraphiQL playground at /graphql
+    graphql_ide="graphiql",  # Enable GraphiQL playground at /graphql
     subscription_protocols=["graphql-ws", "graphql-transport-ws"],
 )
