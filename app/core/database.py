@@ -13,12 +13,18 @@ from sqlalchemy.orm import DeclarativeBase
 
 from app.core.config import settings
 
+engine_kwargs = {"echo": settings.debug}
+if settings.app_env == "test":
+    from sqlalchemy.pool import NullPool
+    engine_kwargs["poolclass"] = NullPool
+else:
+    engine_kwargs["pool_pre_ping"] = True
+    engine_kwargs["pool_size"] = 10
+    engine_kwargs["max_overflow"] = 20
+
 engine = create_async_engine(
     settings.database_url,
-    echo=settings.debug,
-    pool_pre_ping=True,
-    pool_size=10,
-    max_overflow=20,
+    **engine_kwargs,
 )
 
 AsyncSessionLocal = async_sessionmaker(
