@@ -43,7 +43,6 @@ class User(Base):
         DateTime(timezone=True), default=_now, onupdate=_now
     )
 
-    # ── Relationships ─────────────────────────────────────────────────────────
     addresses: Mapped[list[Address]] = relationship(
         "Address", back_populates="user", cascade="all, delete-orphan"
     )
@@ -84,7 +83,6 @@ class Address(Base):
     is_default: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
 
-    # ── Relationships ─────────────────────────────────────────────────────────
     user: Mapped[User] = relationship("User", back_populates="addresses")
 
 

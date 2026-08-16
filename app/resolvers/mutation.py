@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Optional
+
+logger = logging.getLogger(__name__)
 
 import strawberry
 from strawberry.types import Info
@@ -24,7 +27,6 @@ from app.schemas.user import AddressInput, AddressType, LoginInput, RegisterInpu
 
 @strawberry.type
 class Mutation:
-    # ── Auth Mutations ─────────────────────────────────────────────────────────
     @strawberry.mutation(description="Register a new user account")
     async def register(
         self, info: Info[GraphQLContext, None], input: RegisterInput
@@ -62,7 +64,6 @@ class Mutation:
         await svc.logout(refresh_token)
         return MutationSuccess(message="Logged out successfully")
 
-    # ── Cart Mutations ─────────────────────────────────────────────────────────
     @strawberry.mutation(description="Add a product to the shopping cart")
     async def add_to_cart(
         self, info: Info[GraphQLContext, None], input: AddToCartInput
@@ -119,7 +120,6 @@ class Mutation:
         await svc.clear_cart(ctx.current_user.id)
         return MutationSuccess(message="Cart cleared")
 
-    # ── Wishlist Mutations ─────────────────────────────────────────────────────
     @strawberry.mutation(description="Add product to wishlist")
     async def add_to_wishlist(
         self, info: Info[GraphQLContext, None], product_id: str
@@ -166,7 +166,6 @@ class Mutation:
             await ctx.db.delete(item)
         return MutationSuccess(message="Removed from wishlist")
 
-    # ── Order Mutations ────────────────────────────────────────────────────────
     @strawberry.mutation(description="Create an order from cart")
     async def create_order(
         self, info: Info[GraphQLContext, None], input: CreateOrderInput
@@ -178,12 +177,15 @@ class Mutation:
         from app.resolvers.query import Query
         svc = OrderService(ctx.db, ctx.redis)
         order = await svc.create_order(ctx.current_user, input)
-        # Trigger background email job
-        from app.workers.email import send_order_confirmation_task
-        await ctx.redis.rpush(
-            "arq:queue",
-            str({"task": "send_order_confirmation", "order_id": order.id, "user_id": ctx.current_user.id}),
-        )
+        # Trigger background email job via ARQ
+        try:
+            from app.core.redis import get_arq_pool
+            arq_pool = await get_arq_pool()
+            await arq_pool.enqueue_job(
+                "send_order_confirmation", order.id, ctx.current_user.id
+            )
+        except Exception as exc:
+            logger.warning(f"Failed to enqueue order confirmation email job: {exc}")
         return OrderType(
             id=order.id, order_number=order.order_number, status=order.status,
             subtotal=float(order.subtotal), discount_amount=float(order.discount_amount),
@@ -221,7 +223,6 @@ class Mutation:
         await svc.update_order_status(order_id, status, ctx.current_user, note)
         return MutationSuccess(message=f"Order status updated to {status}")
 
-    # ── Product Mutations (Seller/Admin) ───────────────────────────────────────
     @strawberry.mutation(description="Create a new product (Seller/Admin only)")
     async def create_product(
         self, info: Info[GraphQLContext, None], input: CreateProductInput
@@ -266,7 +267,6 @@ class Mutation:
         await svc.update_product(product_id, input, ctx.current_user)
         return MutationSuccess(message="Product updated")
 
-    # ── Review Mutations ───────────────────────────────────────────────────────
     @strawberry.mutation(description="Submit a product review")
     async def create_review(
         self, info: Info[GraphQLContext, None], input: CreateReviewInput
@@ -333,7 +333,6 @@ class Mutation:
             user_name=ctx.current_user.full_name,
         )
 
-    # ── Address Mutations ──────────────────────────────────────────────────────
     @strawberry.mutation(description="Add a shipping address")
     async def add_address(
         self, info: Info[GraphQLContext, None], input: AddressInput
@@ -358,7 +357,6 @@ class Mutation:
             created_at=address.created_at,
         )
 
-    # ── Coupon Mutations ───────────────────────────────────────────────────────
     @strawberry.mutation(description="Validate a coupon code")
     async def validate_coupon(
         self, info: Info[GraphQLContext, None], code: str

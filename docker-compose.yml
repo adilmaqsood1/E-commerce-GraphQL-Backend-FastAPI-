@@ -1,7 +1,6 @@
 version: "3.9"
 
 services:
-  # ── PostgreSQL ──────────────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
     container_name: ecom_postgres
@@ -20,7 +19,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # ── Redis ───────────────────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: ecom_redis
@@ -35,7 +33,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # ── FastAPI App ─────────────────────────────────────────────────────────────
   app:
     build: .
     container_name: ecom_app
@@ -55,7 +52,6 @@ services:
       - ./app:/app/app
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
-  # ── ARQ Worker ──────────────────────────────────────────────────────────────
   worker:
     build: .
     container_name: ecom_worker
@@ -74,3 +70,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
+

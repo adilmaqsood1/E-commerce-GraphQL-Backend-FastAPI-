@@ -14,7 +14,6 @@ from app.core.database import Base
 from app.core.config import settings
 from app.main import app
 
-# ── Test DB (SQLite in-memory for speed) ─────────────────────────────────────
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 test_engine = create_async_engine(TEST_DATABASE_URL, echo=False)

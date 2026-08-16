@@ -55,7 +55,6 @@ class MeType:
     addresses: List[AddressType]
 
 
-# ── Input types ───────────────────────────────────────────────────────────────
 @strawberry.input
 class RegisterInput:
     email: str

@@ -103,7 +103,6 @@ class CartType:
     subtotal: float
 
 
-# ── Input types ───────────────────────────────────────────────────────────────
 @strawberry.input
 class AddToCartInput:
     product_id: str

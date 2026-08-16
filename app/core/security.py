@@ -9,7 +9,6 @@ from passlib.context import CryptContext
 
 from app.core.config import settings
 
-# ── Password hashing ──────────────────────────────────────────────────────────
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
@@ -21,7 +20,6 @@ def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
 
-# ── JWT helpers ───────────────────────────────────────────────────────────────
 def _utcnow() -> datetime:
     return datetime.now(UTC)
 

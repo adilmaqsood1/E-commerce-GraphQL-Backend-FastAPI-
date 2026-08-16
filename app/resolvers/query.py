@@ -113,7 +113,6 @@ def _product_to_type(p) -> ProductType:
 
 @strawberry.type
 class Query:
-    # ── Product Queries ────────────────────────────────────────────────────────
     @strawberry.field(description="Fetch a single product by ID")
     async def product(self, info: Info[GraphQLContext, None], id: str) -> Optional[ProductType]:
         from app.services.product import ProductService
@@ -225,7 +224,6 @@ class Query:
             for b in brands
         ]
 
-    # ── Auth / User Queries ────────────────────────────────────────────────────
     @strawberry.field(description="Get current authenticated user")
     async def me(self, info: Info[GraphQLContext, None]) -> Optional[MeType]:
         ctx = info.context

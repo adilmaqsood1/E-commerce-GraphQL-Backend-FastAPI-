@@ -17,7 +17,6 @@ from app.graphql_app import graphql_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown lifecycle."""
-    # ── Startup ───────────────────────────────────────────────────────────────
     print(f"🚀 Starting {settings.app_name} v{settings.app_version}")
 
     # Warm up Redis connection
@@ -30,7 +29,6 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # ── Shutdown ──────────────────────────────────────────────────────────────
     await close_redis()
     await engine.dispose()
     print("👋 Application shut down")
@@ -45,7 +43,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# ── CORS ──────────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
@@ -54,11 +51,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── GraphQL endpoint ──────────────────────────────────────────────────────────
 app.include_router(graphql_router, prefix="/graphql")
 
 
-# ── Health check ──────────────────────────────────────────────────────────────
 @app.get("/health", tags=["Health"])
 async def health_check():
     return JSONResponse(

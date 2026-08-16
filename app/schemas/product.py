@@ -101,7 +101,6 @@ class RecommendedProductType:
     reason: str  # "collaborative", "content_based", "popularity"
 
 
-# ── Input types ───────────────────────────────────────────────────────────────
 @strawberry.input
 class ProductFilterInput:
     category_id: Optional[str] = None

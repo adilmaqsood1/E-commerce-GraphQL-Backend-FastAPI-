@@ -16,7 +16,6 @@ class Role(str, enum.Enum):
     ADMIN = "ADMIN"
 
 
-# ── Permission sets ───────────────────────────────────────────────────────────
 CUSTOMER_PERMISSIONS = frozenset(
     [
         "view_products",
@@ -66,7 +65,6 @@ def has_role(role: Role, required: Role | list[Role]) -> bool:
     return role == required
 
 
-# ── Strawberry resolver decorators ────────────────────────────────────────────
 def login_required(func: Callable) -> Callable:
     """Ensure the caller is authenticated."""
 

@@ -6,8 +6,11 @@ import redis.asyncio as aioredis
 
 from app.core.config import settings
 
-# ── Singleton pool ─────────────────────────────────────────────────────────────
+from arq import create_pool
+from arq.connections import ArqRedis, RedisSettings
+
 _redis_pool: Optional[aioredis.Redis] = None
+_arq_pool: Optional[ArqRedis] = None
 
 
 async def get_redis() -> aioredis.Redis:
@@ -23,15 +26,25 @@ async def get_redis() -> aioredis.Redis:
     return _redis_pool
 
 
+async def get_arq_pool() -> ArqRedis:
+    """Return the shared ARQ Redis connection pool for enqueuing background tasks."""
+    global _arq_pool
+    if _arq_pool is None:
+        _arq_pool = await create_pool(RedisSettings.from_dsn(settings.redis_url))
+    return _arq_pool
+
+
 async def close_redis() -> None:
     """Close the Redis connection pool gracefully."""
-    global _redis_pool
+    global _redis_pool, _arq_pool
     if _redis_pool:
         await _redis_pool.aclose()
         _redis_pool = None
+    if _arq_pool:
+        await _arq_pool.aclose()
+        _arq_pool = None
 
 
-# ── Cache helpers ──────────────────────────────────────────────────────────────
 class CacheKeys:
     """Centralised cache key namespace."""
 
