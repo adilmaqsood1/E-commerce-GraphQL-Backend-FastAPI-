@@ -19,18 +19,24 @@ async def lifespan(app: FastAPI):
     """Startup and shutdown lifecycle."""
     print(f"🚀 Starting {settings.app_name} v{settings.app_version}")
 
-    # Warm up Redis connection
-    redis = await get_redis()
-    await redis.ping()
-    print("✅ Redis connected")
+    try:
+        redis = await get_redis()
+        await redis.ping()
+        print("✅ Redis connected")
+    except Exception as exc:
+        print(f"⚠️ Redis connection deferred: {exc}")
 
-    # Note: Run `alembic upgrade head` separately (or in Dockerfile CMD)
     print("✅ Application ready")
-
     yield
 
-    await close_redis()
-    await engine.dispose()
+    try:
+        await close_redis()
+    except Exception:
+        pass
+    try:
+        await engine.dispose()
+    except Exception:
+        pass
     print("👋 Application shut down")
 
 
