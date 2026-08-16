@@ -19,8 +19,11 @@ if TYPE_CHECKING:
     from app.models.user import User
 
 
+from strawberry.fastapi import BaseContext
+
+
 @dataclass
-class GraphQLContext:
+class GraphQLContext(BaseContext):
     """Injected into every GraphQL resolver via `info.context`."""
 
     request: Request
